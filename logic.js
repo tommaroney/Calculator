@@ -14,6 +14,11 @@ $(document).ready(function() {
 
         console.log(currButton);
 
+        if((currButton === "open-paran" && previousButt === "open-paran") || (currButton === "open-paran" && previousButt === "close-paran")) {
+            operation.push(currButton);
+            input.append($("<h1>" + currButton + "</h1>"));
+        }
+
         if((operators.includes(currButton) && previousButt === 'open-paran') || (currButton === 'close-paran' && operators.includes(previousButt)))
             return;
 
@@ -38,7 +43,6 @@ $(document).ready(function() {
                 if (multiDigit !== '') {
                     operation.push(parseInt(multiDigit));
                     multiDigit = '';
-                }
 
                 operation.push(currButton);
                 input.append($("<h1>" + currButton + "</h1>"));
