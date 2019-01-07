@@ -2,9 +2,9 @@ $(document).ready(function() {
     var multiDigit = '';
     var result = $("#result");
     var input = $("#input");
-    var carryOver = false;
+    var previousButt = '';
 
-    var operators = [ "plus", "divide", "minus", "times", "power" ];
+    var operators = [ "plus", "divide", "minus", "times", "power", "open-paran", "close-paran" ];
     
     var operation = [];
 
@@ -14,6 +14,9 @@ $(document).ready(function() {
 
         console.log(currButton);
 
+        if((operators.includes(currButton) && previousButt === 'open-paran') || (currButton === 'close-paran' && operators.includes(previousButt)))
+            return;
+
         if(currButton === 'clear')
             clear();
             
@@ -21,7 +24,7 @@ $(document).ready(function() {
         else {
             
 
-            if(operation.length === 1 && !operators.includes(currButton)) {
+            if(operation.length === 1 && !operators.includes(currButton) && previousButt !== "open-paran") {
                 clear();
             }
             
@@ -44,30 +47,52 @@ $(document).ready(function() {
             else if(!operators.includes(currButton) && currButton !== "equals") {
                 // console.log(multiDigit);
                 if(input[0].lastChild && input[0].lastChild.innerText === multiDigit) {
-                    console.log(input[0].lastChild)
                     $(input[0].lastChild).remove();
                 }
                 multiDigit += currButton;
                 input.append($("<h1>" + multiDigit + "</h1>"));
             }
             
-                
-            if(currButton === "equals" && multiDigit !== '') {
+            if((currButton === "equals" && multiDigit !== '') ||currButton === "equals" && previousButt ==='close-paran') {
                 input.append($("<h1>" + currButton + "</h1>"))
-                operation.push(parseInt(multiDigit));
-                multiDigit = '';
+                if(!(multiDigit == '')) {
+                    operation.push(parseInt(multiDigit));
+                    multiDigit = '';
+                }
                 console.log(operation);
                 result.text(equals(operation));
-                carryOver = true;
             }
 
+            if(currButton !== 'equals')
+                previousButt = currButton;
         }
     });
 
-    function equals(opString) {
-        subOp = opString;
+    function equals(subOp) {
 
         while(subOp.length > 1) {
+
+            if(subOp.includes("open-paran"))
+                for(var i = 0; i < subOp.length; i ++)
+
+                    if(subOp[i] === "open-paran") {
+                        var paranReplace = [];
+
+                        paranReplace.push(equals(subOp.slice(i + 1, subOp.lastIndexOf("close-paran"))));
+
+                        if(subOp[i-1] !== undefined && !operators.includes(subOp[i-1]))
+                            paranReplace.unshift("times");
+
+                        if((subOp.lastIndexOf("close-paran") < subOp.length - 1) && (!operators.includes(subOp[subOp.lastIndexOf("close-paran") + 1])))
+                            paranReplace.push("times");
+
+                            
+                        subOp.splice(i, (subOp.lastIndexOf("close-paran") + 1) - i, );
+                        
+                        for(var j = paranReplace.length - 1; j >= 0; j--) {
+                            subOp.splice(i, 0, paranReplace[j]);
+                            }
+                        }
 
             if(subOp.includes("power"))
                 for(var i = 0; i < subOp.length; i ++)
@@ -133,7 +158,7 @@ $(document).ready(function() {
         input.empty();
         result.empty();
         operation = [];
-        carryOver = false;
+        previousButt = '';
     }
     
     });
